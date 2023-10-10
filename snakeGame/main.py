@@ -23,16 +23,19 @@ head.direction = "stop"
 
 food = turtle.Turtle()
 food.speed(0)
-# use custom image as food
-
-food.register_shape("sdhjsad_1.gif", ((0, 0), (0, 20), (20, 20), (20, 0)))
-
-
-
+food.shape("circle")
 
 food.color("red")
 food.penup()
 food.goto(0, 100)
+
+counter_points = 0
+
+turtle.color('deep pink')
+style = ('Courier', 30, 'italic')
+turtle.write(f'Score - 0', font=style, align='center')
+turtle.hideturtle()
+
 
 segments = []
 
@@ -88,6 +91,14 @@ while True:
 
         print("food taken")
 
+        #reset the text to update the score
+        turtle.clear()
+
+
+        counter_points += 1
+
+        turtle.write(f'Score - {counter_points}', font=style, align='center')
+
         x = random.randint(-540, 540)
         y = random.randint(-540, 540)
         food.goto(x, y)
@@ -119,6 +130,9 @@ while True:
 
 
     if head.xcor() > 520 or head.xcor() < -520 or head.ycor() > 480 or head.ycor() < -460:
+
+        turtle.clear()
+        counter_points = 0
 
         explosion = turtle.Turtle()
         explosion.color("yellow")
@@ -153,6 +167,10 @@ while True:
 
     for segment in segments:
         if head.distance(segment) < 20:
+
+            turtle.clear()
+            counter_points = 0
+
             time.sleep(1)
             head.goto(0, 0)
             head.direction = "stop"
@@ -164,4 +182,4 @@ while True:
 
             segments.clear()
 
-    time.sleep(0.04)
+    time.sleep(0.08)
