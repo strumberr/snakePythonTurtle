@@ -128,7 +128,7 @@ while True:
 
     move()
 
-
+    #something
     if head.xcor() > 520 or head.xcor() < -520 or head.ycor() > 480 or head.ycor() < -460:
 
         turtle.clear()
