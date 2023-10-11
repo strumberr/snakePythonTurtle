@@ -37,7 +37,10 @@ turtle.write(f'Score - 0', font=style, align='center')
 turtle.hideturtle()
 
 
+
 segments = []
+
+segment_distance = 20
 
 # Functions
 def go_up():
@@ -91,23 +94,26 @@ while True:
 
         print("food taken")
 
-        #reset the text to update the score
-        turtle.clear()
 
+        turtle.clear()
 
         counter_points += 1
 
         turtle.write(f'Score - {counter_points}', font=style, align='center')
 
-        x = random.randint(-540, 540)
-        y = random.randint(-540, 540)
+        x = random.randint(-500, 500)
+        y = random.randint(-500, 500)
+
         food.goto(x, y)
+
 
 
         new_segment = turtle.Turtle()
         new_segment.speed(0)
         new_segment.shape("square")
         new_segment.color("green")
+
+
         new_segment.penup()
         segments.append(new_segment)
 
@@ -118,6 +124,7 @@ while True:
     for index in range(len(segments) - 1, 0, -1):
         x = segments[index - 1].xcor()
         y = segments[index - 1].ycor()
+        print(x, y)
         segments[index].goto(x, y)
 
 
@@ -128,8 +135,10 @@ while True:
 
     move()
 
-    #something
+
     if head.xcor() > 520 or head.xcor() < -520 or head.ycor() > 480 or head.ycor() < -460:
+
+        print("Game Over - reason - hit the wall")
 
         turtle.clear()
         counter_points = 0
@@ -166,7 +175,8 @@ while True:
 
 
     for segment in segments:
-        if head.distance(segment) < 20:
+        if head.distance(segment) < 2:
+            print("Game Over - reason - hit itself")
 
             turtle.clear()
             counter_points = 0
@@ -182,4 +192,7 @@ while True:
 
             segments.clear()
 
-    time.sleep(0.08)
+
+    time.sleep(0.1)
+
+
