@@ -1,7 +1,7 @@
 import turtle
 import time
 import random
-
+import json 
 
 
 screen = turtle.Screen()
@@ -49,11 +49,28 @@ class snakeGame():
         self.segments = segments
         self.segment_distance = segment_distance
 
+        self.explosion = turtle.Turtle()
+        self.explosion.color("yellow")
+        self.explosion.pensize(1)
+        self.explosion.speed(500)
+        self.explosion.hideturtle()
 
-    # Functions
+        self.timer = 0
+        self.timerStart = False
+
+        self.extra_food = []
+
+        self.obstacles = []
+        
+
+
+
+
+
     def go_up(self):
         if self.head.direction != "down":
             self.head.direction = "up"
+
 
     def go_down(self):
         if self.head.direction != "up":
@@ -84,6 +101,50 @@ class snakeGame():
             x = self.head.xcor()
             self.head.setx(x + 20)
 
+    def getHighscore(self):
+        with open("snakeGame/snakegame.json", "r") as json_file:
+            retrieved_data = json.load(json_file)
+
+        return retrieved_data["highscore"]
+    
+    def getTime(self):
+        with open("snakeGame/snakegame.json", "r") as json_file:
+            retrieved_data = json.load(json_file)
+
+        return retrieved_data["time"]
+    
+    def setHighscore(self, highscore):
+        with open("snakeGame/snakegame.json", "r") as json_file:
+            retrieved_data = json.load(json_file)
+
+        retrieved_data["highscore"] = highscore
+
+        with open("snakeGame/snakegame.json", "w") as json_file:
+            json.dump(retrieved_data, json_file)
+
+    def setTime(self, time):
+        with open("snakeGame/snakegame.json", "r") as json_file:
+            retrieved_data = json.load(json_file)
+
+        retrieved_data["time"] = time
+
+        with open("snakeGame/snakegame.json", "w") as json_file:
+            json.dump(retrieved_data, json_file)
+    
+
+    def spawn_extra_food(self):
+        for _ in range(3):
+            extra_food_piece = turtle.Turtle()
+            extra_food_piece.speed(0)
+            extra_food_piece.shape("circle")
+            extra_food_piece.color("red")
+            extra_food_piece.penup()
+            x = random.randint(-450, 450)
+            y = random.randint(-450, 450)
+            extra_food_piece.goto(x, y)
+            self.extra_food.append(extra_food_piece)
+    
+
     def runningMain(self):
         self.screen.listen()
         self.screen.onkey(self.go_up, "w")
@@ -100,6 +161,13 @@ class snakeGame():
 
             if self.head.distance(food) < 20:
 
+
+                if not self.timerStart:
+                    self.timer = time.time()
+                    self.timerStart = True
+                    print("timer started", self.timer)
+                
+
                 print("food taken")
 
 
@@ -107,13 +175,40 @@ class snakeGame():
 
                 self.counter_points += 1
 
-                self.turtle.write(f'Score - {self.counter_points}', font=style, align='center')
+                self.turtle.penup()
+                self.turtle.goto(-520, 440)
+                self.turtle.write(f'Highscore - {self.getHighscore()}', font=self.style, align='left')
 
-                x = random.randint(-500, 500)
-                y = random.randint(-500, 500)
+                self.turtle.penup()
+                self.turtle.goto(-520, 400)
+                self.turtle.write(f'Score - {self.counter_points}', font=self.style, align='left')
+
+                self.turtle.penup()
+                self.turtle.goto(-520, 360)
+                self.turtle.write(f'Time - {self.getTime()}', font=self.style, align='left')
+
+                x = random.randint(-450, 450)
+                y = random.randint(-450, 450)
 
                 self.food.goto(x, y)
 
+                for el in self.obstacles:
+                    el.hideturtle()
+                self.obstacles = []
+
+
+                for _ in range(3):
+                
+                    obstacle = turtle.Turtle()
+                    obstacle.speed(0)
+                    obstacle.shape("circle")
+                    obstacle.color("white")
+                    obstacle.shapesize(stretch_wid=2, stretch_len=2)
+                    obstacle.penup()
+                    x = random.randint(-450, 450)
+                    y = random.randint(-450, 450)
+                    obstacle.goto(x, y)
+                    self.obstacles.append(obstacle)
 
 
                 self.new_segment = self.turtle.Turtle()
@@ -125,7 +220,36 @@ class snakeGame():
                 self.new_segment.penup()
                 self.segments.append(self.new_segment)
 
-            
+            for extra_food_piece in self.extra_food:
+                if self.head.distance(extra_food_piece) < 20:
+                    self.extra_food.remove(extra_food_piece)
+                    extra_food_piece.hideturtle()
+
+                    self.counter_points += 1
+                    self.turtle.clear()
+                    
+                    self.turtle.penup()
+                    self.turtle.goto(-520, 440)
+                    self.turtle.write(f'Highscore - {self.getHighscore()}', font=self.style, align='left')
+
+                    self.turtle.penup()
+                    self.turtle.goto(-520, 400)
+                    self.turtle.write(f'Score - {self.counter_points}', font=self.style, align='left')
+
+                    self.turtle.penup()
+                    self.turtle.goto(-520, 360)
+                    self.turtle.write(f'Time - {self.getTime()}', font=self.style, align='left')
+
+                    new_segment = turtle.Turtle()
+                    new_segment.speed(0)
+                    new_segment.shape("square")
+                    new_segment.color("green")
+                    new_segment.penup()
+                    self.segments.append(new_segment)
+
+
+            if len(self.extra_food) < 1:
+                self.spawn_extra_food()
 
 
 
@@ -144,18 +268,80 @@ class snakeGame():
             self.move()
 
 
+
+            for obstacle in self.obstacles:
+                if self.head.distance(obstacle) < 25:
+                    print("Game Over - reason - hit the obstacle")
+
+                    if self.counter_points > self.getHighscore():
+                        timeTimer = time.time() - self.timer
+                        minutes = int(timeTimer // 60)
+                        seconds = int(timeTimer % 60)
+                        self.setTime(f"{minutes}m:{seconds}s")
+                        self.timerStart = True
+                        print("timer ended", timeTimer)
+
+                    
+
+
+                    for el in self.obstacles:
+                        el.hideturtle()
+                    self.obstacles = []
+
+                    for el in self.segments:
+                        el.hideturtle()
+
+                    self.segments = []
+                    self.new_segment.clear()
+                    
+                    if self.counter_points > self.getHighscore():
+                        self.setHighscore(self.counter_points)
+
+                    self.turtle.clear()
+                    self.counter_points = 0
+
+                    time.sleep(1)
+                    self.head.goto(0, 0)
+                    self.head.direction = "stop"
+
+
+                    obstacle.hideturtle()
+
+
+                    self.obstacles.clear()
+
+
             if self.head.xcor() > 520 or self.head.xcor() < -520 or self.head.ycor() > 480 or self.head.ycor() < -460:
 
                 print("Game Over - reason - hit the wall")
 
+                if self.counter_points > self.getHighscore():
+                    timeTimer = time.time() - self.timer
+                    minutes = int(timeTimer // 60)
+                    seconds = int(timeTimer % 60)
+                    self.setTime(f"{minutes}m:{seconds}s")
+                    self.timerStart = True
+                    print("timer ended", timeTimer)
+        
+                for el in self.segments:
+                    el.hideturtle()
+                self.segments = []
+                self.new_segment.clear()
+
+                for el in self.obstacles:
+                    el.hideturtle()
+                self.obstacles = []
+
+
+
+
+                if self.counter_points > self.getHighscore():
+                    self.setHighscore(self.counter_points)
+
+
                 self.turtle.clear()
                 self.counter_points = 0
 
-                self.explosion = self.turtle.Turtle()
-                self.explosion.color("yellow")
-                self.explosion.pensize(1)
-                self.explosion.speed(500)
-                self.explosion.hideturtle()
 
                 x, y = self.head.xcor(), self.head.ycor()
 
@@ -176,7 +362,7 @@ class snakeGame():
 
 
                 for segment in self.segments:
-                    self.segment.goto(1000, 1000)
+                    segment.hideturtle()
 
 
                 self.segments.clear()
@@ -186,6 +372,26 @@ class snakeGame():
                 if self.head.distance(segment) < 2:
                     print("Game Over - reason - hit itself")
 
+                    if self.counter_points > self.getHighscore():
+                        timeTimer = time.time() - self.timer
+                        minutes = int(timeTimer // 60)
+                        seconds = int(timeTimer % 60)
+                        self.setTime(f"{minutes}m:{seconds}s")
+                        self.timerStart = True
+                        print("timer ended", timeTimer)
+
+                    for el in self.obstacles:
+                        el.hideturtle()
+                    self.obstacles = []
+
+                    for el in self.segments:
+                        el.hideturtle()
+                    self.segments = []
+                    self.new_segment.clear()
+                    
+                    if self.counter_points > self.getHighscore():
+                        self.setHighscore(self.counter_points)
+
                     self.turtle.clear()
                     self.counter_points = 0
 
@@ -194,8 +400,7 @@ class snakeGame():
                     self.head.direction = "stop"
 
 
-                    for segment in self.segments:
-                        self.segment.goto(1000, 1000)
+                    segment.hideturtle()
 
 
                     self.segments.clear()
