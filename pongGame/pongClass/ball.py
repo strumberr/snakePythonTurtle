@@ -2,6 +2,7 @@ import turtle
 
 class BallMovement():
     def __init__(self, wn):
+
         self.wn = wn
 
         self.ball = turtle.Turtle()
@@ -42,7 +43,7 @@ class BallMovement():
             self.ball.dx *= -1
             self.reset = True
 
-        return self.ball.xcor(), self.ball.ycor(), self.ball.dx, self.ball.dy, self.reset
+        return self.reset
     
     def bounceDX(self):
         self.ball.dx *= -1
@@ -56,4 +57,6 @@ class BallMovement():
     def setBallXPaddleA(self, paddle_a):
         self.ball.setx(paddle_a.xcor() + 20)
 
-
+    def Ball(self):
+        return self.ball
+        

@@ -2,6 +2,7 @@ import turtle
 from paddles import Paddles
 from ball import BallMovement
 from score import ScoreTrack
+from obstacle import Obstacle
 
 wn = turtle.Screen()
 wn.bgcolor("black")
@@ -13,34 +14,36 @@ paddle.runningMain()
 paddle_a = paddle.paddleA()
 paddle_b = paddle.paddleB()
 
-ballClass = BallMovement(wn)
-ball = BallMovement(wn).ball
+BallMovement = BallMovement(wn)
+ball = BallMovement.Ball()
 
 score = ScoreTrack(wn)
 
-update = 0
+Obstacle = Obstacle(wn)
 
 while True:
     wn.update()
 
     paddle.paddle_b_up_auto(ball.ycor() + ball.dy)
 
-    ball = ballClass.ball
-
-    ballX, ballY, ballDX, ballDY, reset = ballClass.ballMechanics()
+    resetGame = BallMovement.ballMechanics()
 
     paddleAHit = paddle.paddleAHit(paddle_a, ball)
     paddleBHit = paddle.paddleBHit(paddle_b, ball)
     
     if paddleAHit:
         score.scorePlusPaddleA()
-        ballClass.setBallXPaddleA(paddle_a)
-        ballClass.bounceDX()
+        BallMovement.setBallXPaddleA(paddle_a)
+        BallMovement.bounceDX()
 
     if paddleBHit:
         score.scorePlusPaddleB()
-        ballClass.setBallXPaddleB(paddle_b)
-        ballClass.bounceDX()
+        BallMovement.setBallXPaddleB(paddle_b)
+        BallMovement.bounceDX()
 
-    if reset:
+    if Obstacle.obstacleCollision(ball):
+        BallMovement.bounceDX()
+        BallMovement.bounceDY()
+
+    if resetGame:
         score.scoreReset()
